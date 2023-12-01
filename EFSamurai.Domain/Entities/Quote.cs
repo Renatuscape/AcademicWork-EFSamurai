@@ -10,7 +10,7 @@ namespace EFSamurai.Domain.Entities
     {
         public int Id {  get; set; }
         public string Text { get; set; } = string.Empty;
-        public QuoteStyle? QuoteStyle { get; set; }
+        public QuoteStyle? Style { get; set; }
         public int SamuraiId { get; set; }
         public Samurai? Samurai { get; set; }
     }
