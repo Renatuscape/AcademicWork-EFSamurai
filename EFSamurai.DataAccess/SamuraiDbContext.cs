@@ -11,6 +11,7 @@ namespace EFSamurai.DataAccess
     public class SamuraiDbContext : DbContext
     {
         public DbSet<Samurai> Samurai => Set<Samurai>();
+        public DbSet<Quote> Quote => Set<Quote>();
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(
