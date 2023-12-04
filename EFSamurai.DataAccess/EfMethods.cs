@@ -54,5 +54,24 @@ namespace EFSamurai.DataAccess
                 .ThenInclude(bl => bl!.BattleEvents)
                 .SingleOrDefault();
         }
+
+        public static void DeleteSamurai(Samurai samurai)
+        {
+            using SamuraiDbContext db = new();
+            db.Samurai.Where(s => s.Id == samurai.Id);
+        }
+
+        public static bool DeleteSamurai(int id)
+        {
+            using SamuraiDbContext db = new();
+
+            Samurai? samurai = db.Samurai.Where(s => s.Id == id).SingleOrDefault();
+            if (samurai is not null)
+            {
+                DeleteSamurai(samurai);
+                return true;
+            }
+            return false;
+        }
     }
 }
