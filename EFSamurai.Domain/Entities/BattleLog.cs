@@ -12,6 +12,6 @@ namespace EFSamurai.Domain.Entities
         public string Name { get; set; } = string.Empty;
         public int BattleId { get; set; }
         public Battle? Battle { get; set; }
-        public ICollection<BattleLog>? BattleLogs { get; set; }
+        public ICollection<BattleEvent>? BattleEvents { get; set; }
     }
 }
