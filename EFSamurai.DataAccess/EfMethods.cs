@@ -1,6 +1,7 @@
 ﻿using EFSamurai.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,12 @@ namespace EFSamurai.DataAccess
             // have to. So in this (the more restrictive) version, we just reshape the
             // in-parameter and call the other version.
             return CreateSamurai(new Samurai() { Name = name });
+        }
+
+        public static List<string> ReadAllSamuraiNames()
+        {
+            using SamuraiDbContext db = new();
+            return db.Samurai.Select(s => s.Name).ToList();
         }
     }
 }
