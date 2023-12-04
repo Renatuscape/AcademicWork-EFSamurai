@@ -1,4 +1,5 @@
 ﻿using EFSamurai.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,6 +32,27 @@ namespace EFSamurai.DataAccess
         {
             using SamuraiDbContext db = new();
             return db.Samurai.Select(s => s.Name).ToList();
+        }
+
+        public static void CreateSamurais(List<Samurai> samurais)
+        {
+            using SamuraiDbContext db = new();
+            db.Samurai.AddRange(samurais);
+        }
+
+        public static Samurai? ReadSamurai(int id)
+        {
+
+            using SamuraiDbContext db = new();
+
+            return db.Samurai.Where(s => s.Id == id)
+                .Include(s => s.SecretIdentity)
+                .Include(s => s.Quotes)
+                .Include(s => s.SamuraiBattles)!
+                .ThenInclude(sb => sb.Battle)
+                .ThenInclude(b => b!.BattleLog)
+                .ThenInclude(bl => bl!.BattleEvents)
+                .SingleOrDefault();
         }
     }
 }
