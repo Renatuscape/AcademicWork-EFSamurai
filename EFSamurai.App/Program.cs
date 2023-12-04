@@ -6,7 +6,9 @@ namespace EFSamurai.App
     {
         static void Main(string[] args)
         {
-            EfMethods.CreateSamurai("Tomoe Gozen");
+            //EfMethods.CreateSamurai("Tomoe Gozen");
+            OutputConsole.DisplayTitle("Samurai");
+            OutputConsole.DisplayStringList(EfMethods.ReadAllSamuraiNames());
         }
     }
 }
