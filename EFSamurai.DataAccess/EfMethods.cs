@@ -38,6 +38,7 @@ namespace EFSamurai.DataAccess
         {
             using SamuraiDbContext db = new();
             db.Samurai.AddRange(samurais);
+            db.SaveChanges();
         }
 
         public static Samurai? ReadSamurai(int id)
@@ -58,7 +59,8 @@ namespace EFSamurai.DataAccess
         public static void DeleteSamurai(Samurai samurai)
         {
             using SamuraiDbContext db = new();
-            db.Samurai.Where(s => s.Id == samurai.Id);
+            db.Remove(samurai);
+            db.SaveChanges();
         }
 
         public static bool DeleteSamurai(int id)
