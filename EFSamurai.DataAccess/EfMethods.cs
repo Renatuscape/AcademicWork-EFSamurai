@@ -1,11 +1,5 @@
 ﻿using EFSamurai.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EFSamurai.DataAccess
 {
@@ -74,6 +68,80 @@ namespace EFSamurai.DataAccess
                 return true;
             }
             return false;
+        }
+
+        public static bool UpdateSamuraiSetSecretIdentityRealName(int samuraiId, string realName)
+        {
+            using SamuraiDbContext db = new();
+            SecretIdentity? secretIdentity = db.SecretIdentity.Where(s => s.SamuraiID == samuraiId).SingleOrDefault();
+
+            if (secretIdentity is not null)
+            {
+                secretIdentity.RealName = realName;
+                db.Update(secretIdentity);
+                db.SaveChanges();
+                return true;
+            }
+            return false;
+        }
+
+        public static int CreateBattle(Battle battle)
+        {
+            using SamuraiDbContext db = new();
+            db.Battle.Add(battle);
+            db.SaveChanges();
+            //If the battle object in the in parameter has battle log with battle events attached
+            //those objects will also be added in their respective columns automatically
+
+            return battle.Id;
+        }
+
+        public static void LinkBattleAndSamurais(int battleId, List<int> samuraiIds)
+        {
+            using SamuraiDbContext db = new();
+
+            if (db.Battle.Any(b => b.Id == battleId))
+            {
+                List<SamuraiBattle> links = new List<SamuraiBattle>();
+
+                foreach (int id in samuraiIds)
+                {
+                    Samurai? samurai = ReadSamurai(id);
+                    if (samurai is not null)
+                    {
+                        // Check if the link doesn't already exist
+                        if (!db.SamuraiBattles.Any(sb => sb.SamuraiId == id && sb.BattleId == battleId))
+                        {
+                            SamuraiBattle link = new SamuraiBattle() { SamuraiId = id, BattleId = battleId };
+                            links.Add(link);
+                        }
+                    }
+                }
+
+                db.SamuraiBattles.AddRange(links);
+                db.SaveChanges();
+            }
+        }
+
+        public static int CountBattlesForSamurai(int samuraiId, bool? isBrutal = null)
+        {
+            using SamuraiDbContext db = new();
+            List<SamuraiBattle> linkObjects = db.SamuraiBattles.Where(sb => sb.SamuraiId == samuraiId)
+                .Include(sb => sb.Battle)
+                .ToList();
+            
+            if (isBrutal != null)
+            {
+                foreach (SamuraiBattle link in linkObjects)
+                {
+                    if (link.Battle?.IsBrutal != isBrutal)
+                    {
+                        linkObjects.Remove(link);
+                    }
+                }
+            }
+
+            return linkObjects.Count;
         }
     }
 }
