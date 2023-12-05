@@ -59,8 +59,9 @@ namespace EFSamurai.DataAccess
 
             // 1) Note: As cascading delete is on (by default), it is enough to remove Samurais and Battles.
             // Deleting the rows in these two tables drags ("cascades") everything else with them.
-            db.RemoveRange(db.Samurai);
-            db.RemoveRange(db.Battle);
+            db.Samurai.ExecuteDelete();
+            db.Battle.ExecuteDelete();
+            // Obsolete method: db.RemoveRange(db.Battle);
 
             // 2) Restart IDENTITY counting at 1 for tables with auto-incrementing PKs (6 of the 7 EfSamurai tables).
             // (Note: Hardcoded tablenames, doublecheck singular/plural vs. your naming convention.)
