@@ -8,9 +8,21 @@ namespace EFSamurai.App
         static void Main(string[] args)
         {
             SamuraiDbContext.ClearAllData();
-            //EfMethods.CreateSamurai("Tomoe Gozen");
+            EfMethods.CreateSamurais(new() {
+                    new(){ Name = "Oda Nobunaga"},
+                    new(){ Name = "Musashi Miyamoto"},
+                    new(){ Name = "Date Masamune"},
+                    new(){ Name = "Saido Takamori"},
+                  }
+             );
+
             OutputConsole.DisplayTitle("Samurai");
-            OutputConsole.DisplayStringList(EfMethods.ReadAllSamuraiNames());
+            //OutputConsole.DisplayStringList(EfMethods.ReadAllSamuraiNames());
+            var printList = EfMethods.ReadSamuraisOrderById();
+            foreach (Samurai samurai in printList)
+            {
+                Console.WriteLine(samurai.Id + " " + samurai.Name);
+            }
 
             Battle battle = new()
             {
@@ -42,7 +54,7 @@ namespace EFSamurai.App
                         new BattleEvent()
                         {
                             Order = 4,
-                            Summary = "Morimoto no Yoritomo appointed himself as the Sei-i Taishogun.",
+                            Summary = "Morimoto no Yoritomo appoints himself as the Sei-i Taishogun.",
                         }
                     }
                 }
