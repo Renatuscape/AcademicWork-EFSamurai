@@ -85,16 +85,15 @@ namespace EFSamurai.DataAccess
             }
             return false;
         }
-
         public static int CreateBattle(Battle battle)
         {
             using SamuraiDbContext db = new();
             db.Battle.Add(battle);
             db.SaveChanges();
-            //If the battle object in the in parameter has battle log with battle events attached
-            //those objects will also be added in their respective columns automatically
 
             return battle.Id;
+            //If the battle object in the in parameter has battle log with battle events attached
+            //those objects will also be added in their respective columns automatically
         }
 
         public static void LinkBattleAndSamurais(int battleId, List<int> samuraiIds)
@@ -154,6 +153,18 @@ namespace EFSamurai.DataAccess
             return db.Quote.Where(q => q.Style == quoteStyle).ToList();
         }
 
+        public static List<string> StringifyQuotesOfStyleAddSamuraiName(QuoteStyle quoteStyle)
+        {
+            List<string> stringified = new();
+            using SamuraiDbContext db = new();
+            List<Quote> quotes =  db.Quote.Where(q => q.Style == quoteStyle).ToList();
+
+            foreach (Quote quote in quotes)
+            {
+                stringified.Add($"'{quote.Text}' is a {quote.Style} quote by {quote.Samurai?.Name ?? "Unknown"}");
+            }
+            return stringified;
+        }
         public static Samurai CreateSamuraiWithRelatedData(Samurai samurai, string secretIdentity, List<Quote> quotes, List<Battle> battles)
         {
             using SamuraiDbContext db = new();
