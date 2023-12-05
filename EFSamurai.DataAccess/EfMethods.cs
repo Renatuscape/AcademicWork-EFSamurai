@@ -157,7 +157,8 @@ namespace EFSamurai.DataAccess
         {
             List<string> stringified = new();
             using SamuraiDbContext db = new();
-            List<Quote> quotes =  db.Quote.Where(q => q.Style == quoteStyle).ToList();
+            List<Quote> quotes =  db.Quote.Where(q => q.Style == quoteStyle)
+                .Include(q => q.Samurai).ToList();
 
             foreach (Quote quote in quotes)
             {
