@@ -1,4 +1,5 @@
-﻿using EFSamurai.Domain.Entities;
+﻿using EFSamurai.Domain;
+using EFSamurai.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFSamurai.DataAccess
@@ -107,8 +108,10 @@ namespace EFSamurai.DataAccess
                 foreach (int id in samuraiIds)
                 {
                     Samurai? samurai = ReadSamurai(id);
+
                     if (samurai is not null)
                     {
+
                         // Check if the link doesn't already exist
                         if (!db.SamuraiBattles.Any(sb => sb.SamuraiId == id && sb.BattleId == battleId))
                         {
@@ -126,22 +129,111 @@ namespace EFSamurai.DataAccess
         public static int CountBattlesForSamurai(int samuraiId, bool? isBrutal = null)
         {
             using SamuraiDbContext db = new();
-            List<SamuraiBattle> linkObjects = db.SamuraiBattles.Where(sb => sb.SamuraiId == samuraiId)
-                .Include(sb => sb.Battle)
-                .ToList();
-            
+
+            IQueryable<SamuraiBattle> samuraiBattles = db.SamuraiBattles
+                .Where(sb => sb.SamuraiId == samuraiId);
+
             if (isBrutal != null)
             {
-                foreach (SamuraiBattle link in linkObjects)
-                {
-                    if (link.Battle?.IsBrutal != isBrutal)
-                    {
-                        linkObjects.Remove(link);
-                    }
-                }
+                samuraiBattles = samuraiBattles
+                    .Where(sb => sb.Battle!.IsBrutal == isBrutal);
             }
 
-            return linkObjects.Count;
+            return samuraiBattles.Count();
+        }
+
+        public static List<Samurai> ReadSamuraisOrderById()
+        {
+            using SamuraiDbContext db = new();
+            return db.Samurai.OrderBy(s => s.Id).ToList();
+        }
+
+        public static List<Quote> ReadQuotesOfStyle(QuoteStyle quoteStyle)
+        {
+            using SamuraiDbContext db = new();
+            return db.Quote.Where(q => q.Style == quoteStyle).ToList();
+        }
+
+        public static Samurai CreateSamuraiWithRelatedData(Samurai samurai, string secretIdentity, List<Quote> quotes, List<Battle> battles)
+        {
+            using SamuraiDbContext db = new();
+            samurai.Quotes = quotes;
+            db.Samurai.Add(samurai);
+            db.SaveChanges();
+
+            List<int> idList = new() { samurai.Id };
+
+            foreach (Battle battle in battles)
+            {
+                LinkBattleAndSamurais(battle.Id, idList);
+            }
+
+            UpdateSamuraiSetSecretIdentityRealName(samurai.Id, secretIdentity);
+
+            return samurai;
+        }
+        public static int CreateSamuraiWithRelatedData(Samurai samurai)
+        {
+            //using SamuraiDbContext db = new();
+            //db.Samurai.Add(samurai);
+
+            //if (samurai.SecretIdentity != null)
+            //{
+            //    db.SecretIdentity.Add(samurai.SecretIdentity);
+            //}
+
+            //if (samurai.Quotes != null)
+            //{
+            //    db.Quote.AddRange(samurai.Quotes);
+            //}
+
+            //if (samurai.SamuraiBattles != null)
+            //{
+            //    foreach (SamuraiBattle link in samurai.SamuraiBattles)
+            //    {
+            //        LinkBattleAndSamurais(link.BattleId, new() { samurai.Id});
+            //    }
+            //}
+
+            //db.SaveChanges();
+            //return samurai.Id;
+
+            using SamuraiDbContext db = new();
+            using var transaction = db.Database.BeginTransaction();
+
+            try
+            {
+                db.Samurai.Add(samurai);
+                db.SaveChanges();
+
+                if (samurai.SecretIdentity != null)
+                {
+                    db.SecretIdentity.Add(samurai.SecretIdentity);
+                }
+
+                if (samurai.Quotes != null)
+                {
+                    db.Quote.AddRange(samurai.Quotes);
+                }
+
+                if (samurai.SamuraiBattles != null)
+                {
+                    foreach (SamuraiBattle link in samurai.SamuraiBattles)
+                    {
+                        LinkBattleAndSamurais(link.BattleId, new List<int> { link.SamuraiId });
+                    }
+                }
+
+                db.SaveChanges();
+                transaction.Commit();
+
+                return samurai.Id;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
     }
 }
