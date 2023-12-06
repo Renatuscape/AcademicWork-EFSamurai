@@ -1,6 +1,7 @@
 ﻿using EFSamurai.Domain;
 using EFSamurai.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace EFSamurai.DataAccess
 {
@@ -166,7 +167,7 @@ namespace EFSamurai.DataAccess
             }
             return stringified;
         }
-        public static Samurai CreateSamuraiWithRelatedData(Samurai samurai, string secretIdentity, List<Quote> quotes, List<Battle> battles)
+        public static Samurai CreateSamuraiWithRelatedData(Samurai samurai, string realName, List<Quote> quotes, List<Battle> battles)
         {
             using SamuraiDbContext db = new();
             samurai.Quotes = quotes;
@@ -179,44 +180,65 @@ namespace EFSamurai.DataAccess
             {
                 LinkBattleAndSamurais(battle.Id, idList);
             }
-
-            UpdateSamuraiSetSecretIdentityRealName(samurai.Id, secretIdentity);
+            SecretIdentity identity = new();
+            identity.RealName = realName;
+            identity.SamuraiID = samurai.Id;
+            db.SecretIdentity.Add(identity);
+            db.SaveChanges();
 
             return samurai;
         }
+
+        public static string PrintSamuraiWithRelatedData(int samuraiId)
+        {
+            StringBuilder samuraiText = new();
+            using SamuraiDbContext db = new();
+            Samurai? samurai = db.Samurai
+                .Where(s => s.Id == samuraiId)
+                .Include(s => s.SecretIdentity)
+                .Include(s => s.Quotes)
+                .Include(s => s.SamuraiBattles)!
+                .ThenInclude(sb => sb.Battle)
+                .ThenInclude(b => b!.BattleLog)
+                .ThenInclude(bl => bl!.BattleEvents)
+                .SingleOrDefault();
+
+            if (samurai != null)
+            {
+                samuraiText.AppendLine(new string('=', 25));
+                samuraiText.AppendLine("Name: " + samurai.Name);
+                samuraiText.AppendLine("Secret Identity: " + samurai.SecretIdentity?.RealName);
+                samuraiText.AppendLine("Hairstyle: " + samurai.HairStyle.ToString());
+                if (samurai.Quotes != null)
+                {
+                    samuraiText.AppendLine(new string ('-',25));
+                    samuraiText.AppendLine("Quotes:");
+                    foreach (Quote quote in samurai.Quotes)
+                    {
+                        samuraiText.AppendLine("\t" + quote.Text);
+                    }
+                }
+                if (samurai.SamuraiBattles != null)
+                {
+                    samuraiText.AppendLine(new string('-', 25));
+                    samuraiText.AppendLine("Battles: ");
+                    foreach (SamuraiBattle link in samurai.SamuraiBattles)
+                    {
+                        samuraiText.AppendLine(link.Battle?.Name);
+                        samuraiText.AppendLine(link.Battle?.BattleLog?.ToString());
+                    }
+                }
+            }
+            return samuraiText.ToString();
+        }
         public static int CreateSamuraiWithRelatedData(Samurai samurai)
         {
-            //using SamuraiDbContext db = new();
-            //db.Samurai.Add(samurai);
-
-            //if (samurai.SecretIdentity != null)
-            //{
-            //    db.SecretIdentity.Add(samurai.SecretIdentity);
-            //}
-
-            //if (samurai.Quotes != null)
-            //{
-            //    db.Quote.AddRange(samurai.Quotes);
-            //}
-
-            //if (samurai.SamuraiBattles != null)
-            //{
-            //    foreach (SamuraiBattle link in samurai.SamuraiBattles)
-            //    {
-            //        LinkBattleAndSamurais(link.BattleId, new() { samurai.Id});
-            //    }
-            //}
-
-            //db.SaveChanges();
-            //return samurai.Id;
-
             using SamuraiDbContext db = new();
             using var transaction = db.Database.BeginTransaction();
 
             try
             {
                 db.Samurai.Add(samurai);
-                db.SaveChanges();
 
                 if (samurai.SecretIdentity != null)
                 {
