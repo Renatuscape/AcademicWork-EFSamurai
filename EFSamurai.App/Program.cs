@@ -84,7 +84,7 @@ namespace EFSamurai.App
 
             List<Quote> alQuotes = new()
             {
-                new() { Text = " Dracula! In the name of my Mother, I will defeat you again!", Style = Domain.QuoteStyle.Awesome}
+                new() { Text = "Dracula! In the name of my Mother, I will defeat you again!", Style = Domain.QuoteStyle.Awesome}
             };
 
             Samurai alucard = new()
@@ -92,14 +92,13 @@ namespace EFSamurai.App
                 Name = "Alucard",
                 HairStyle = Domain.HairStyle.Western,
                 Quotes = alQuotes,
-                SecretIdentity = new()
+                SecretIdentity = new() { RealName = "Adrian Tepes"}
             };
 
             int alucardId = EfMethods.CreateSamuraiWithRelatedData(alucard);
             EfMethods.LinkBattleAndSamurais(1, new() { alucard.Id });
-            EfMethods.UpdateSamuraiSetSecretIdentityRealName(alucard.Id, "Adrian Tepes");
-            Console.WriteLine(EfMethods.PrintSamuraiWithRelatedData(dracula.Id));
-            Console.WriteLine(EfMethods.PrintSamuraiWithRelatedData(alucardId));
+            Console.WriteLine(EfMethods.StringifySamuraiWithRelatedData(dracula.Id));
+            Console.WriteLine(EfMethods.StringifySamuraiWithRelatedData(alucardId));
         }
     }
 }
