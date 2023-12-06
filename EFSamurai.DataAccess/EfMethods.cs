@@ -7,20 +7,17 @@ namespace EFSamurai.DataAccess
 {
     public static class EfMethods
     {
+        #region Create Methods
         public static int CreateSamurai(Samurai samurai)
         {
             using SamuraiDbContext db = new();
             db.Samurai.Add(samurai);
             db.SaveChanges();
-            // Id got a new value (is no longer 0) when we did SaveChanges(), above.
             return samurai.Id;
         }
 
         public static int CreateSamurai(string name)
         {
-            // NOTE: We don't want to make two bodies of the same method if we don't
-            // have to. So in this (the more restrictive) version, we just reshape the
-            // in-parameter and call the other version.
             return CreateSamurai(new Samurai() { Name = name });
         }
 
@@ -40,15 +37,13 @@ namespace EFSamurai.DataAccess
             {
                 samurai.Quotes = quotes;
 
-                //List<int> idList = new() { samurai.Id };
-
                 samurai.SamuraiBattles = new List<SamuraiBattle>();
                 foreach (Battle battle in battles)
                 {
                     samurai.SamuraiBattles.Add(new SamuraiBattle() { BattleId = battle.Id });
                 }
 
-                samurai.SecretIdentity = new() {RealName = realName };
+                samurai.SecretIdentity = new() { RealName = realName };
                 db.Samurai.Add(samurai);
                 db.SaveChanges();
                 transaction.Commit();
@@ -107,6 +102,7 @@ namespace EFSamurai.DataAccess
             db.SaveChanges();
             return battle.Id;
         }
+        #endregion
 
         #region Delete Methods
         public static void DeleteSamurai(Samurai samurai)
@@ -284,6 +280,20 @@ namespace EFSamurai.DataAccess
                 .ThenInclude(b => b!.BattleLog)
                 .ThenInclude(bl => bl!.BattleEvents)
                 .SingleOrDefault();
+        }
+
+        public static ICollection<string> StringifySamuraiNamesAddAliases()
+        {
+            using SamuraiDbContext db = new();
+            List<string> stringified = new();
+
+            var samuraiSecrets = db.Samurai.Include(s => s.SecretIdentity);
+            foreach (Samurai? samurai in samuraiSecrets)
+            {
+                stringified.Add($"{samurai.SecretIdentity?.RealName ?? "Unknown"} alias {samurai.Name}");
+            }
+
+            return stringified;
         }
         #endregion
     }
