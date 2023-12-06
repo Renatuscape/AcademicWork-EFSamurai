@@ -97,14 +97,19 @@ namespace EFSamurai.App
 
             int alucardId = EfMethods.CreateSamuraiWithRelatedData(alucard);
             EfMethods.LinkBattleAndSamurais(1, new() { alucard.Id });
-            Console.WriteLine(EfMethods.StringifySamuraiWithRelatedData(dracula.Id));
-            Console.WriteLine(EfMethods.StringifySamuraiWithRelatedData(alucardId));
+            //Console.WriteLine(EfMethods.StringifySamuraiWithRelatedData(dracula.Id));
+            //Console.WriteLine(EfMethods.StringifySamuraiWithRelatedData(alucardId));
 
 
-            Console.WriteLine("\n\n");
-            foreach (string line in EfMethods.StringifySamuraiNamesAddAliases())
+            //Console.WriteLine("\n\n");
+            //foreach (string line in EfMethods.StringifySamuraiNamesAddAliases())
+            //{
+            //    Console.WriteLine(line + "\n");
+            //}
+            var stringBattles = EfMethods.StringifyBattlesWithLog(new(0001, 1, 1), new(5000, 1, 1), true);
+            foreach (string battles in stringBattles)
             {
-                Console.WriteLine(line + "\n");
+                Console.WriteLine(battles);
             }
         }
     }
