@@ -295,6 +295,34 @@ namespace EFSamurai.DataAccess
 
             return stringified;
         }
+
+        public static ICollection<string> StringifyBattlesWithLog(DateTime from, DateTime to, bool isBrutal)
+        {
+            using SamuraiDbContext db = new();
+            List<string> stringified = new();
+            const int Padding = -20;
+
+            var battles = db.Battle.Where(b => b.StartDate >= from && b.StartDate <= to)
+                .Include(b => b.BattleLog)
+                .ThenInclude(bl => bl!.BattleEvents);
+
+            foreach (Battle b in battles)
+            {
+                stringified.Add($"----------------------------------------------------------------------" +
+                              $"\n{"Name of Battle",Padding}{b.Name,Padding}" +
+                              $"\n{"Log Name",Padding}{b.BattleLog?.Name,Padding}");
+
+                if (b.BattleLog != null && b.BattleLog.BattleEvents != null)
+                {
+                    foreach (BattleEvent bEvent in b.BattleLog.BattleEvents)
+                    {
+                        stringified.Add($"{"Event",Padding}Order {bEvent.Order}: {bEvent.Summary}");
+                    }
+                }
+            }
+
+            return stringified;
+        }
         #endregion
     }
 }
