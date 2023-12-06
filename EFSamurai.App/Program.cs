@@ -9,13 +9,13 @@ namespace EFSamurai.App
         static void Main(string[] args)
         {
             SamuraiDbContext.ClearAllData();
-            EfMethods.CreateSamurais(new() {
-                    new(){ Name = "Oda Nobunaga"},
-                    new(){ Name = "Musashi Miyamoto"},
-                    new(){ Name = "Date Masamune"},
-                    new(){ Name = "Saido Takamori"},
-                  }
-             );
+            EfMethods.CreateSamurais(new()
+            {
+                new(){ Name = "Oda Nobunaga"},
+                new(){ Name = "Musashi Miyamoto"},
+                new(){ Name = "Date Masamune"},
+                new(){ Name = "Saido Takamori"},
+            });
 
             //OutputConsole.DisplayTitle("Samurai");
             //OutputConsole.DisplayStringList(EfMethods.ReadAllSamuraiNames());
@@ -30,7 +30,7 @@ namespace EFSamurai.App
                 Name = "The Genpei War",
                 Description = "A power struggle between the Taira and Minamoto clans sparked the war which resulted in the establishment of the Kamakura shogunate.",
                 IsBrutal = true,
-                StartDate  = new DateTime(1180, 1, 1),
+                StartDate = new DateTime(1180, 1, 1),
                 EndDate = new DateTime(1185, 1, 1),
                 BattleLog = new BattleLog()
                 {
@@ -79,7 +79,7 @@ namespace EFSamurai.App
                 }
             };
             List<Battle> battleList = new() { battle };
-            Samurai dracula = new() { Name = "Dracula", HairStyle = Domain.HairStyle.Western};
+            Samurai dracula = new() { Name = "Dracula", HairStyle = Domain.HairStyle.Western };
             dracula = EfMethods.CreateSamuraiWithRelatedData(dracula, "Vlad Tepes", quotes, battleList);
 
             List<Quote> alQuotes = new()
@@ -92,13 +92,20 @@ namespace EFSamurai.App
                 Name = "Alucard",
                 HairStyle = Domain.HairStyle.Western,
                 Quotes = alQuotes,
-                SecretIdentity = new() { RealName = "Adrian Tepes"}
+                SecretIdentity = new() { RealName = "Adrian Tepes" }
             };
 
             int alucardId = EfMethods.CreateSamuraiWithRelatedData(alucard);
             EfMethods.LinkBattleAndSamurais(1, new() { alucard.Id });
             Console.WriteLine(EfMethods.StringifySamuraiWithRelatedData(dracula.Id));
             Console.WriteLine(EfMethods.StringifySamuraiWithRelatedData(alucardId));
+
+
+            Console.WriteLine("\n\n");
+            foreach (string line in EfMethods.StringifySamuraiNamesAddAliases())
+            {
+                Console.WriteLine(line + "\n");
+            }
         }
     }
 }
