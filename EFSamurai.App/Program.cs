@@ -1,5 +1,6 @@
 ﻿using EFSamurai.DataAccess;
 using EFSamurai.Domain.Entities;
+using System.Collections.Generic;
 
 namespace EFSamurai.App
 {
@@ -16,13 +17,13 @@ namespace EFSamurai.App
                   }
              );
 
-            OutputConsole.DisplayTitle("Samurai");
+            //OutputConsole.DisplayTitle("Samurai");
             //OutputConsole.DisplayStringList(EfMethods.ReadAllSamuraiNames());
-            var printList = EfMethods.ReadSamuraisOrderById();
-            foreach (Samurai samurai in printList)
-            {
-                Console.WriteLine(samurai.Id + " " + samurai.Name);
-            }
+            //var printList = EfMethods.ReadSamuraisOrderById();
+            //foreach (Samurai samurai in printList)
+            //{
+            //    Console.WriteLine(samurai.Id + " " + samurai.Name);
+            //}
 
             Battle battle = new()
             {
@@ -61,6 +62,44 @@ namespace EFSamurai.App
             };
 
             EfMethods.CreateBattle(battle);
+
+            List<Quote> quotes = new()
+            {
+                new()
+                {
+                    Text = "Blegh!", Style = Domain.QuoteStyle.Lame
+                },
+                new()
+                {
+                    Text = "What is a man? A miserable pile of secrets.", Style = Domain.QuoteStyle.Awesome
+                },
+                new()
+                {
+                    Text = "Enough talk. Have at you!", Style = Domain.QuoteStyle.Cheesy
+                }
+            };
+            List<Battle> battleList = new() { battle };
+            Samurai dracula = new() { Name = "Dracula", HairStyle = Domain.HairStyle.Western};
+            dracula = EfMethods.CreateSamuraiWithRelatedData(dracula, "Vlad Tepes", quotes, battleList);
+
+            List<Quote> alQuotes = new()
+            {
+                new() { Text = " Dracula! In the name of my Mother, I will defeat you again!", Style = Domain.QuoteStyle.Awesome}
+            };
+
+            Samurai alucard = new()
+            {
+                Name = "Alucard",
+                HairStyle = Domain.HairStyle.Western,
+                Quotes = alQuotes,
+                SecretIdentity = new()
+            };
+
+            int alucardId = EfMethods.CreateSamuraiWithRelatedData(alucard);
+            EfMethods.LinkBattleAndSamurais(1, new() { alucard.Id });
+            EfMethods.UpdateSamuraiSetSecretIdentityRealName(alucard.Id, "Adrian Tepes");
+            Console.WriteLine(EfMethods.PrintSamuraiWithRelatedData(dracula.Id));
+            Console.WriteLine(EfMethods.PrintSamuraiWithRelatedData(alucardId));
         }
     }
 }
